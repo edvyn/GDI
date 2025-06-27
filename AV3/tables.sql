@@ -44,7 +44,7 @@ CREATE TABLE endereco_cliente (
     cpf_cliente VARCHAR2(11) NOT NULL,
     cep VARCHAR2(8) NOT NULL,
     numero VARCHAR2(10) NOT NULL,
-    complemento VARCHAR2(50),
+    complemento VARCHAR2(50) NOT NULL,
     PRIMARY KEY (cpf_cliente, cep, numero, complemento),
     CONSTRAINT fk_end_cliente FOREIGN KEY (cpf_cliente) REFERENCES cliente(cpf) ON DELETE CASCADE,
     CONSTRAINT fk_endereco_cli FOREIGN KEY (cep, numero, complemento) REFERENCES endereco(cep, numero, complemento)
