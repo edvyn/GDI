@@ -1,3 +1,12 @@
+/****checklist***
+CREATE TABLE - ok
+INSERT INTO -ok
+CLÁUSULA CONSTRAINT EM CREATE TABLE -ok
+CREATE SEQUENCE --ok
+CLÁUSULA CHECK EM CREATE TABLE ok
+*/
+
+
 /* criação de tabelas */
 -- Tabela PESSOA  --ok
 CREATE TABLE pessoa (
