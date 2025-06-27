@@ -1,4 +1,5 @@
 /* inserção de dados nas tabelas */
+
 -- 1. Tabela PESSOA --ok
 INSERT INTO pessoa (cpf, nome) VALUES ('12345678901', 'João Silva');
 INSERT INTO pessoa (cpf, nome) VALUES ('23456789012', 'Maria Oliveira');
