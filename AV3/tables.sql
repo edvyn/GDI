@@ -19,7 +19,7 @@ CREATE TABLE telefone_pessoa (
 CREATE TABLE endereco (
     cep VARCHAR2(8) NOT NULL,
     numero VARCHAR2(10) NOT NULL,
-    complemento VARCHAR2(50),
+    complemento VARCHAR2(50) NOT NULL,
     rua VARCHAR2(100) NOT NULL,
     bairro VARCHAR2(50) NOT NULL,
     cidade VARCHAR2(50) NOT NULL,
