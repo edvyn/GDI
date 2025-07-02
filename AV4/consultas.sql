@@ -92,7 +92,7 @@ INNER JOIN projeto pr ON co.id_projeto = pr.id_projeto;
 --12MAX, 13. MIN, 14. AVG, 15. COUNT & 22. GROUP BY, 23. HAVING
 
 -- Consulta p calcular o salário médio, máximo e mínimo dos operários, e também contar quantos existem por cargo,
--- mas só considerando os cargos com mais de um operário e com salário médio acima de 2600
+-- com salário médio acima de 2600
 
 SELECT cargo, COUNT(cpf) AS total_operarios,
        AVG(salario) AS salario_medio,
