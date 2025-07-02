@@ -36,9 +36,9 @@ INSERT INTO telefone_pessoa (cpf, numero_fone) VALUES ('11223344556', '859876543
 INSERT INTO telefone_pessoa (cpf, numero_fone) VALUES ('22334455667', '61998765432');
 
 -- 4. Tabela CLIENTE    --ok
-INSERT INTO cliente (cpf, email) VALUES ('12345678901', 'joao.silva@example.com');
-INSERT INTO cliente (cpf, email) VALUES ('23456789012', 'maria.oliveira@example.com');
-INSERT INTO cliente (cpf, email) VALUES ('11223344556', 'lucas.martins@email.com');
+INSERT INTO cliente (cpf, email) VALUES ('12345678901', 'joao.silva@gmail.com');
+INSERT INTO cliente (cpf, email) VALUES ('23456789012', 'maria.oliveira@yahoo.com');
+INSERT INTO cliente (cpf, email) VALUES ('11223344556', 'lucas.martins@microsoft.com');
 
 -- 5. Tabela FORNECEDOR  ok
 INSERT INTO fornecedor (cnpj, nome) VALUES ('00000000000001', 'Materiais de Construção LTDA');
