@@ -154,5 +154,29 @@ SELECT cpf FROM cliente
 UNION
 SELECT cpf FROM operario;
 
---25. CREATE VIEW:
+--25. CREATE VIEW: cria uma view de pessoas com suas profissões
 
+CREATE VIEW vw_pessoas_profissoes AS
+SELECT
+    p.nome AS nome_completo,
+    p.cpf,
+    -- Determina a profissão da pessoa
+    CASE
+        WHEN o.cpf IS NOT NULL THEN 'Operário (' || o.cargo || ')'
+        WHEN ar.cpf IS NOT NULL THEN 'Arquiteto (CAU: ' || ar.cau || ')'
+        WHEN eng.cpf IS NOT NULL THEN 'Engenheiro (' || eng.cargo || ' - CREA: ' || eng.crea || ')'
+        WHEN c.cpf IS NOT NULL THEN 'Cliente'
+        ELSE 'Não Definido' 
+    END AS profissao
+FROM
+    pessoa p
+LEFT JOIN
+    cliente c ON p.cpf = c.cpf
+LEFT JOIN
+    operario o ON p.cpf = o.cpf
+LEFT JOIN
+    arquiteto ar ON p.cpf = ar.cpf
+LEFT JOIN
+    engenheiro eng ON p.cpf = eng.cpf;
+
+--obs: não consegui rodar no livesql, aponta insufficient privileges
