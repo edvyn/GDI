@@ -24,8 +24,35 @@ NESTED TABLE --ok
 
 
 
+--------------------TIPOS--------------------------
 
--- 1. Definição do Tipo de Objeto TP_ENDERECO
+
+-- tipo pra número de telefone
+CREATE TYPE TP_FONE AS OBJECT (
+    numero VARCHAR2(15),
+    CONSTRUCTOR FUNCTION TP_FONE(numero VARCHAR2) RETURN SELF AS RESULT
+);
+/
+
+-- corpo do construtor pra tp_fone
+CREATE OR REPLACE TYPE BODY TP_FONE AS
+    CONSTRUCTOR FUNCTION TP_FONE(numero VARCHAR2) RETURN SELF AS RESULT IS
+    BEGIN
+        SELF.numero := numero;
+        RETURN;
+    END;
+END;
+/
+
+-- tipo varray pra telefones de pessoa
+CREATE TYPE TP_TELEFONE_PESSOA_ARRAY AS VARRAY(10) OF TP_FONE;
+/
+
+-- tipo varray pra telefones de fornecedor
+CREATE TYPE TP_TELEFONE_FORNECEDOR_ARRAY AS VARRAY(10) OF TP_FONE;
+/
+
+-- tipo pra endereço
 CREATE TYPE TP_ENDERECO AS OBJECT (
     cep VARCHAR2(8),
     numero VARCHAR2(10),
@@ -46,7 +73,7 @@ CREATE TYPE TP_ENDERECO AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_ENDERECO
+-- corpo do construtor pra tp_endereço
 CREATE OR REPLACE TYPE BODY TP_ENDERECO AS
     CONSTRUCTOR FUNCTION TP_ENDERECO(
         cep VARCHAR2,
@@ -70,44 +97,7 @@ CREATE OR REPLACE TYPE BODY TP_ENDERECO AS
 END;
 /
 
--- 2. Tabela para ENDERECO
-CREATE TABLE TB_ENDERECOS OF TP_ENDERECO (
-    cep CONSTRAINT ENDERECO_CEP_NN NOT NULL,
-    numero CONSTRAINT ENDERECO_NUMERO_NN NOT NULL,
-    complemento CONSTRAINT ENDERECO_COMPLEMENTO_NN NOT NULL,
-    rua CONSTRAINT ENDERECO_RUA_NN NOT NULL,
-    bairro CONSTRAINT ENDERECO_BAIRRO_NN NOT NULL,
-    cidade CONSTRAINT ENDERECO_CIDADE_NN NOT NULL,
-    estado CONSTRAINT ENDERECO_ESTADO_NN NOT NULL,
-    CONSTRAINT PK_ENDERECO PRIMARY KEY (cep, numero, complemento),
-    CONSTRAINT CEP_CHECK CHECK (REGEXP_LIKE(cep, '^[0-9]{8}$')),
-    CONSTRAINT ESTADO_CHECK CHECK (estado IN (
-        'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
-        'PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'))
-);
-
--- 3. Definição do Tipo de Objeto TP_FONE
-CREATE TYPE TP_FONE AS OBJECT (
-    numero VARCHAR2(15),
-    CONSTRUCTOR FUNCTION TP_FONE(numero VARCHAR2) RETURN SELF AS RESULT
-);
-/
-
--- Corpo do Construtor para TP_FONE
-CREATE OR REPLACE TYPE BODY TP_FONE AS
-    CONSTRUCTOR FUNCTION TP_FONE(numero VARCHAR2) RETURN SELF AS RESULT IS
-    BEGIN
-        SELF.numero := numero;
-        RETURN;
-    END;
-END;
-/
-
--- ARRAY para Telefones de PESSOA
-CREATE TYPE TP_TELEFONE_PESSOA_ARRAY AS VARRAY(10) OF TP_FONE;
-/
-
--- 4. Definição do Tipo de Objeto TP_PESSOA (Supertype)
+-- supertipo pra pessoa
 CREATE TYPE TP_PESSOA AS OBJECT (
     cpf VARCHAR2(11),
     nome VARCHAR2(100),
@@ -120,7 +110,7 @@ CREATE TYPE TP_PESSOA AS OBJECT (
 ) NOT FINAL;
 /
 
--- Corpo do Construtor para TP_PESSOA
+-- corpo do construtor pra tp_pessoa
 CREATE OR REPLACE TYPE BODY TP_PESSOA AS
     CONSTRUCTOR FUNCTION TP_PESSOA(
         cpf VARCHAR2,
@@ -136,15 +126,7 @@ CREATE OR REPLACE TYPE BODY TP_PESSOA AS
 END;
 /
 
--- 5. Tabela para PESSOA
-CREATE TABLE TB_PESSOAS OF TP_PESSOA (
-    cpf CONSTRAINT PESSOA_CPF_NN NOT NULL,
-    nome CONSTRAINT PESSOA_NOME_NN NOT NULL,
-    CONSTRAINT PK_PESSOA PRIMARY KEY (cpf),
-    CONSTRAINT CPF_CHECK CHECK (REGEXP_LIKE(cpf, '^[0-9]{11}$'))
-);
-
--- 6. Definição do Tipo de Objeto TP_CLIENTE (Subtipo de TP_PESSOA)
+-- subtipo pra cliente
 CREATE TYPE TP_CLIENTE UNDER TP_PESSOA (
     email VARCHAR2(100),
     CONSTRUCTOR FUNCTION TP_CLIENTE(
@@ -156,7 +138,7 @@ CREATE TYPE TP_CLIENTE UNDER TP_PESSOA (
 );
 /
 
--- Corpo do Construtor para TP_CLIENTE
+-- corpo do construtor pra tp_cliente
 CREATE OR REPLACE TYPE BODY TP_CLIENTE AS
     CONSTRUCTOR FUNCTION TP_CLIENTE(
         cpf VARCHAR2,
@@ -172,18 +154,7 @@ CREATE OR REPLACE TYPE BODY TP_CLIENTE AS
 END;
 /
 
--- 7. Tabela para CLIENTE
-CREATE TABLE TB_CLIENTES OF TP_CLIENTE (
-    cpf CONSTRAINT CLIENTE_CPF_PK PRIMARY KEY,
-    email CONSTRAINT CLIENTE_EMAIL_NN NOT NULL,
-    CONSTRAINT EMAIL_CHECK CHECK (REGEXP_LIKE(email, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'))
-);
-
--- 8. ARRAY para tgelefones de FORNECEDOR
-CREATE TYPE TP_TELEFONE_FORNECEDOR_ARRAY AS VARRAY(10) OF TP_FONE;
-/
-
--- Definição  do tipo TP_FORNECEDOR
+-- tipo pra fornecedor
 CREATE TYPE TP_FORNECEDOR AS OBJECT (
     cnpj VARCHAR2(14),
     nome VARCHAR2(100),
@@ -196,7 +167,7 @@ CREATE TYPE TP_FORNECEDOR AS OBJECT (
 );
 /
 
--- Corpo do Construtor pa TP_FORNECEDOR
+-- corpo do construtor pra tp_fornecedor
 CREATE OR REPLACE TYPE BODY TP_FORNECEDOR AS
     CONSTRUCTOR FUNCTION TP_FORNECEDOR(
         cnpj VARCHAR2,
@@ -212,15 +183,7 @@ CREATE OR REPLACE TYPE BODY TP_FORNECEDOR AS
 END;
 /
 
--- 9. Tabela para FORNECEDOR
-CREATE TABLE TB_FORNECEDORES OF TP_FORNECEDOR (
-    cnpj CONSTRAINT FORNECEDOR_CNPJ_NN NOT NULL,
-    nome CONSTRAINT FORNECEDOR_NOME_NN NOT NULL,
-    CONSTRAINT PK_FORNECEDOR PRIMARY KEY (cnpj),
-    CONSTRAINT CNPJ_CHECK CHECK (REGEXP_LIKE(cnpj, '^[0-9]{14}$'))
-);
-
--- 10. Definição do tipo dd objeto TP_OPERARIO (Subtipo de TP_PESSOA)
+-- subtipo pra operário
 CREATE TYPE TP_OPERARIO UNDER TP_PESSOA (
     cargo VARCHAR2(50),
     salario NUMBER(10,2),
@@ -234,7 +197,7 @@ CREATE TYPE TP_OPERARIO UNDER TP_PESSOA (
 );
 /
 
--- Corpo do construtor para TP_OPERARIO
+-- corpo do construtor pra tp_operário
 CREATE OR REPLACE TYPE BODY TP_OPERARIO AS
     CONSTRUCTOR FUNCTION TP_OPERARIO(
         cpf VARCHAR2,
@@ -244,7 +207,7 @@ CREATE OR REPLACE TYPE BODY TP_OPERARIO AS
         salario NUMBER
     ) RETURN SELF AS RESULT IS
     BEGIN
-        SELF := TP_PESSOA(cpf, nome, telefones); -- Chamada corrigida do construtor do supertipo
+        SELF := TP_PESSOA(cpf, nome, telefones);
         SELF.cargo := cargo;
         SELF.salario := salario;
         RETURN;
@@ -252,15 +215,7 @@ CREATE OR REPLACE TYPE BODY TP_OPERARIO AS
 END;
 /
 
--- 11. Tabela para OPERARIO
-CREATE TABLE TB_OPERARIOS OF TP_OPERARIO (
-    cpf CONSTRAINT OPERARIO_CPF_PK PRIMARY KEY,
-    cargo CONSTRAINT OPERARIO_CARGO_NN NOT NULL,
-    salario CONSTRAINT OPERARIO_SALARIO_NN NOT NULL,
-    CONSTRAINT SALARIO_OPERARIO_CHECK CHECK (salario >= 1212.00)
-);
-
--- 12. Definição do Tipo de Objeto TP_ARQUITETO (Subtipo de TP_PESSOA)
+-- subtipo pra arquiteto
 CREATE TYPE TP_ARQUITETO UNDER TP_PESSOA (
     cau VARCHAR2(20),
     salario NUMBER(10,2),
@@ -274,7 +229,7 @@ CREATE TYPE TP_ARQUITETO UNDER TP_PESSOA (
 );
 /
 
--- Corpo do Construtor para TP_ARQUITETO
+-- corpo do construtor pra tp_arquiteto
 CREATE OR REPLACE TYPE BODY TP_ARQUITETO AS
     CONSTRUCTOR FUNCTION TP_ARQUITETO(
         cpf VARCHAR2,
@@ -284,7 +239,7 @@ CREATE OR REPLACE TYPE BODY TP_ARQUITETO AS
         salario NUMBER
     ) RETURN SELF AS RESULT IS
     BEGIN
-        SELF := TP_PESSOA(cpf, nome, telefones); 
+        SELF := TP_PESSOA(cpf, nome, telefones);
         SELF.cau := cau;
         SELF.salario := salario;
         RETURN;
@@ -292,15 +247,7 @@ CREATE OR REPLACE TYPE BODY TP_ARQUITETO AS
 END;
 /
 
--- 13. Tabela para ARQUITETO
-CREATE TABLE TB_ARQUITETOS OF TP_ARQUITETO (
-    cpf CONSTRAINT ARQUITETO_CPF_PK PRIMARY KEY,
-    cau CONSTRAINT ARQUITETO_CAU_NN NOT NULL UNIQUE,
-    salario CONSTRAINT ARQUITETO_SALARIO_NN NOT NULL,
-    CONSTRAINT SALARIO_ARQUITETO_CHECK CHECK (salario >= 3000.00)
-);
-
--- 14. Definição do Tipo de Objeto TP_ENGENHEIRO (Subtipo de TP_PESSOA)
+-- subtipo pra engenheiro
 CREATE TYPE TP_ENGENHEIRO UNDER TP_PESSOA (
     crea VARCHAR2(20),
     cargo VARCHAR2(50),
@@ -318,7 +265,7 @@ CREATE TYPE TP_ENGENHEIRO UNDER TP_PESSOA (
 );
 /
 
--- Corpo do Construtor para TP_ENGENHEIRO
+-- corpo do construtor pra tp_engenheiro
 CREATE OR REPLACE TYPE BODY TP_ENGENHEIRO AS
     CONSTRUCTOR FUNCTION TP_ENGENHEIRO(
         cpf VARCHAR2,
@@ -330,7 +277,7 @@ CREATE OR REPLACE TYPE BODY TP_ENGENHEIRO AS
         salario NUMBER
     ) RETURN SELF AS RESULT IS
     BEGIN
-        SELF := TP_PESSOA(cpf, nome, telefones); 
+        SELF := TP_PESSOA(cpf, nome, telefones);
         SELF.crea := crea;
         SELF.cargo := cargo;
         SELF.ref_supervisor := ref_supervisor;
@@ -340,17 +287,7 @@ CREATE OR REPLACE TYPE BODY TP_ENGENHEIRO AS
 END;
 /
 
--- 15. Tabela para ENGENHEIRO
-CREATE TABLE TB_ENGENHEIROS OF TP_ENGENHEIRO (
-    cpf CONSTRAINT ENGENHEIRO_CPF_PK PRIMARY KEY,
-    crea CONSTRAINT ENGENHEIRO_CREA_NN NOT NULL UNIQUE,
-    cargo CONSTRAINT ENGENHEIRO_CARGO_NN NOT NULL,
-    salario CONSTRAINT ENGENHEIRO_SALARIO_NN NOT NULL,
-    CONSTRAINT FK_ENGENHEIRO_SUPERVISOR FOREIGN KEY (ref_supervisor) REFERENCES TB_ENGENHEIROS,
-    CONSTRAINT SALARIO_ENGENHEIRO_CHECK CHECK (salario >= 5000.00)
-);
-
--- 16. Definição do Tipo de Objeto TP_MATERIAL
+-- tipo pra material
 CREATE TYPE TP_MATERIAL AS OBJECT (
     codigo VARCHAR2(10),
     nome VARCHAR2(100),
@@ -365,7 +302,7 @@ CREATE TYPE TP_MATERIAL AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_MATERIAL
+-- corpo do construtor pra tp_material
 CREATE OR REPLACE TYPE BODY TP_MATERIAL AS
     CONSTRUCTOR FUNCTION TP_MATERIAL(
         codigo VARCHAR2,
@@ -383,18 +320,7 @@ CREATE OR REPLACE TYPE BODY TP_MATERIAL AS
 END;
 /
 
--- 17. Tabela para MATERIAL
-CREATE TABLE TB_MATERIAIS OF TP_MATERIAL (
-    codigo CONSTRAINT MATERIAL_CODIGO_NN NOT NULL,
-    nome CONSTRAINT MATERIAL_NOME_NN NOT NULL,
-    quantidade CONSTRAINT MATERIAL_QUANTIDADE_NN NOT NULL,
-    custo_unitario CONSTRAINT MATERIAL_CUSTO_UNITARIO_NN NOT NULL,
-    CONSTRAINT PK_MATERIAL PRIMARY KEY (codigo),
-    CONSTRAINT QUANTIDADE_CHECK CHECK (quantidade >= 0),
-    CONSTRAINT CUSTO_CHECK CHECK (custo_unitario > 0)
-);
-
--- 18. Definição do Tipo de Objeto TP_ETAPA
+-- tipo pra etapa de projeto
 CREATE TYPE TP_ETAPA AS OBJECT (
     status_atual VARCHAR2(20),
     data_inicio DATE,
@@ -407,7 +333,7 @@ CREATE TYPE TP_ETAPA AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_ETAPA
+-- corpo do construtor pra tp_etapa
 CREATE OR REPLACE TYPE BODY TP_ETAPA AS
     CONSTRUCTOR FUNCTION TP_ETAPA(
         status_atual VARCHAR2,
@@ -423,11 +349,11 @@ CREATE OR REPLACE TYPE BODY TP_ETAPA AS
 END;
 /
 
--- 19. Tipo de Tabela Aninhada para ETAPAS
+-- tipo de tabela aninhada pra etapas de projeto
 CREATE TYPE TP_ETAPA_LIST AS TABLE OF TP_ETAPA;
 /
 
--- 20. Definição do Tipo de Objeto TP_PROJETO
+-- tipo pra projeto
 CREATE TYPE TP_PROJETO AS OBJECT (
     id_projeto VARCHAR2(10),
     ref_endereco REF TP_ENDERECO,
@@ -442,7 +368,7 @@ CREATE TYPE TP_PROJETO AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_PROJETO
+-- corpo do construtor pra tp_projeto
 CREATE OR REPLACE TYPE BODY TP_PROJETO AS
     CONSTRUCTOR FUNCTION TP_PROJETO(
         id_projeto VARCHAR2,
@@ -460,19 +386,7 @@ CREATE OR REPLACE TYPE BODY TP_PROJETO AS
 END;
 /
 
--- 21. Tabela para PROJETO
-CREATE TABLE TB_PROJETOS OF TP_PROJETO (
-    id_projeto CONSTRAINT PROJETO_ID_NN NOT NULL,
-    ref_endereco WITH ROWID REFERENCES TB_ENDERECOS,
-    orcamento CONSTRAINT PROJETO_ORCAMENTO_NN NOT NULL,
-    CONSTRAINT PK_PROJETO PRIMARY KEY (id_projeto),
-    CONSTRAINT ORCAMENTO_CHECK CHECK (orcamento > 0)
-) NESTED TABLE etapas STORE AS NT_TB_ETAPAS_PROJETO (
-    CONSTRAINT STATUS_CHECK CHECK (status_atual IN ('Planejada', 'Em execução', 'Concluída', 'Cancelada')),
-    CONSTRAINT DATAS_CHECK CHECK (data_conclusao_prevista >= data_inicio)
-);
-
--- 22. Definição do Tipo de Objeto TP_CONTRATA (Tabela de Junção)
+-- tipo pra o relacionamento contrata
 CREATE TYPE TP_CONTRATA AS OBJECT (
     ref_cliente REF TP_CLIENTE,
     ref_projeto REF TP_PROJETO,
@@ -489,7 +403,7 @@ CREATE TYPE TP_CONTRATA AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_CONTRATA
+-- corpo do construtor pra tp_contrata
 CREATE OR REPLACE TYPE BODY TP_CONTRATA AS
     CONSTRUCTOR FUNCTION TP_CONTRATA(
         ref_cliente REF TP_CLIENTE,
@@ -509,18 +423,7 @@ CREATE OR REPLACE TYPE BODY TP_CONTRATA AS
 END;
 /
 
--- Tabela para CONTRATA
-CREATE TABLE TB_CONTRATAS OF TP_CONTRATA (
-    ref_cliente WITH ROWID REFERENCES TB_CLIENTES,
-    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
-    data_assinatura CONSTRAINT CONTRATA_DATA_ASS_NN NOT NULL,
-    valor_total CONSTRAINT CONTRATA_VALOR_TOTAL_NN NOT NULL,
-    condicoes_pagamento CONSTRAINT CONTRATA_COND_PAG_NN NOT NULL,
-    CONSTRAINT PK_CONTRATA PRIMARY KEY (ref_cliente, ref_projeto),
-    CONSTRAINT VALOR_TOTAL_CHECK CHECK (valor_total > 0)
-);
-
--- 23. Definição do Tipo de Objeto TP_TRABALHA_EM 
+-- tipo pra o relacionamento trabalha_em
 CREATE TYPE TP_TRABALHA_EM AS OBJECT (
     ref_operario REF TP_OPERARIO,
     ref_projeto REF TP_PROJETO,
@@ -531,7 +434,7 @@ CREATE TYPE TP_TRABALHA_EM AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_TRABALHA_EM
+-- corpo do construtor pra tp_trabalha_em
 CREATE OR REPLACE TYPE BODY TP_TRABALHA_EM AS
     CONSTRUCTOR FUNCTION TP_TRABALHA_EM(
         ref_operario REF TP_OPERARIO,
@@ -545,14 +448,7 @@ CREATE OR REPLACE TYPE BODY TP_TRABALHA_EM AS
 END;
 /
 
--- Tabela para TRABALHA_EM
-CREATE TABLE TB_TRABALHA_EM OF TP_TRABALHA_EM (
-    ref_operario WITH ROWID REFERENCES TB_OPERARIOS,
-    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
-    CONSTRAINT PK_TRABALHA_EM PRIMARY KEY (ref_operario, ref_projeto)
-);
-
--- 24. Definição do Tipo de Objeto TP_PLANEJA 
+-- tipo pra o relacionamento planeja
 CREATE TYPE TP_PLANEJA AS OBJECT (
     ref_engenheiro REF TP_ENGENHEIRO,
     ref_projeto REF TP_PROJETO,
@@ -567,7 +463,7 @@ CREATE TYPE TP_PLANEJA AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_PLANEJA
+-- corpo do construtor pra tp_planeja
 CREATE OR REPLACE TYPE BODY TP_PLANEJA AS
     CONSTRUCTOR FUNCTION TP_PLANEJA(
         ref_engenheiro REF TP_ENGENHEIRO,
@@ -585,18 +481,7 @@ CREATE OR REPLACE TYPE BODY TP_PLANEJA AS
 END;
 /
 
--- Tabela para PLANEJA
-CREATE TABLE TB_PLANEJA OF TP_PLANEJA (
-    ref_engenheiro WITH ROWID REFERENCES TB_ENGENHEIROS,
-    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
-    status_calculo_estrutural CONSTRAINT PLANEJA_STATUS_CALC_NN NOT NULL,
-    status_fundacao CONSTRAINT PLANEJA_STATUS_FUND_NN NOT NULL,
-    CONSTRAINT PK_PLANEJA PRIMARY KEY (ref_engenheiro, ref_projeto),
-    CONSTRAINT STATUS_CALC_CHECK CHECK (status_calculo_estrutural IN ('Pendente', 'Em andamento', 'Concluído')),
-    CONSTRAINT STATUS_FUND_CHECK CHECK (status_fundacao IN ('Pendente', 'Em andamento', 'Concluído'))
-);
-
--- 25. Definição do Tipo de Objeto TP_PROJETA 
+-- tipo pra o relacionamento projeta
 CREATE TYPE TP_PROJETA AS OBJECT (
     ref_arquiteto REF TP_ARQUITETO,
     ref_projeto REF TP_PROJETO,
@@ -607,7 +492,7 @@ CREATE TYPE TP_PROJETA AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_PROJETA
+-- corpo do construtor pra tp_projeta
 CREATE OR REPLACE TYPE BODY TP_PROJETA AS
     CONSTRUCTOR FUNCTION TP_PROJETA(
         ref_arquiteto REF TP_ARQUITETO,
@@ -621,14 +506,7 @@ CREATE OR REPLACE TYPE BODY TP_PROJETA AS
 END;
 /
 
--- Tabela para PROJETA
-CREATE TABLE TB_PROJETA OF TP_PROJETA (
-    ref_arquiteto WITH ROWID REFERENCES TB_ARQUITETOS,
-    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
-    CONSTRAINT PK_PROJETA PRIMARY KEY (ref_arquiteto, ref_projeto)
-);
-
--- 26. Definição do Tipo de Objeto TP_ALOCA_PARA 
+-- tipo pra o relacionamento aloca_para
 CREATE TYPE TP_ALOCA_PARA AS OBJECT (
     ref_fornecedor REF TP_FORNECEDOR,
     ref_material REF TP_MATERIAL,
@@ -643,7 +521,7 @@ CREATE TYPE TP_ALOCA_PARA AS OBJECT (
 );
 /
 
--- Corpo do Construtor para TP_ALOCA_PARA
+-- corpo do construtor pra tp_aloca_para
 CREATE OR REPLACE TYPE BODY TP_ALOCA_PARA AS
     CONSTRUCTOR FUNCTION TP_ALOCA_PARA(
         ref_fornecedor REF TP_FORNECEDOR,
@@ -661,7 +539,134 @@ CREATE OR REPLACE TYPE BODY TP_ALOCA_PARA AS
 END;
 /
 
--- Tabela para ALOCA_PARA
+
+---------- tabelas ---------------
+
+-- tabela pra endereços
+CREATE TABLE TB_ENDERECOS OF TP_ENDERECO (
+    cep CONSTRAINT ENDERECO_CEP_NN NOT NULL,
+    numero CONSTRAINT ENDERECO_NUMERO_NN NOT NULL,
+    complemento CONSTRAINT ENDERECO_COMPLEMENTO_NN NOT NULL,
+    rua CONSTRAINT ENDERECO_RUA_NN NOT NULL,
+    bairro CONSTRAINT ENDERECO_BAIRRO_NN NOT NULL,
+    cidade CONSTRAINT ENDERECO_CIDADE_NN NOT NULL,
+    estado CONSTRAINT ENDERECO_ESTADO_NN NOT NULL,
+    CONSTRAINT PK_ENDERECO PRIMARY KEY (cep, numero, complemento),
+    CONSTRAINT CEP_CHECK CHECK (REGEXP_LIKE(cep, '^[0-9]{8}$')),
+    CONSTRAINT ESTADO_CHECK CHECK (estado IN (
+        'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA',
+        'PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'))
+);
+
+-- tabela pra pessoas
+CREATE TABLE TB_PESSOAS OF TP_PESSOA (
+    cpf CONSTRAINT PESSOA_CPF_NN NOT NULL,
+    nome CONSTRAINT PESSOA_NOME_NN NOT NULL,
+    CONSTRAINT PK_PESSOA PRIMARY KEY (cpf),
+    CONSTRAINT CPF_CHECK CHECK (REGEXP_LIKE(cpf, '^[0-9]{11}$'))
+);
+
+-- tabela pra clientes
+CREATE TABLE TB_CLIENTES OF TP_CLIENTE (
+    cpf CONSTRAINT CLIENTE_CPF_PK PRIMARY KEY,
+    email CONSTRAINT CLIENTE_EMAIL_NN NOT NULL,
+    CONSTRAINT EMAIL_CHECK CHECK (REGEXP_LIKE(email, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'))
+);
+
+-- tabela pra fornecedores
+CREATE TABLE TB_FORNECEDORES OF TP_FORNECEDOR (
+    cnpj CONSTRAINT FORNECEDOR_CNPJ_NN NOT NULL,
+    nome CONSTRAINT FORNECEDOR_NOME_NN NOT NULL,
+    CONSTRAINT PK_FORNECEDOR PRIMARY KEY (cnpj),
+    CONSTRAINT CNPJ_CHECK CHECK (REGEXP_LIKE(cnpj, '^[0-9]{14}$'))
+);
+
+-- tabela pra operários
+CREATE TABLE TB_OPERARIOS OF TP_OPERARIO (
+    cpf CONSTRAINT OPERARIO_CPF_PK PRIMARY KEY,
+    cargo CONSTRAINT OPERARIO_CARGO_NN NOT NULL,
+    salario CONSTRAINT OPERARIO_SALARIO_NN NOT NULL,
+    CONSTRAINT SALARIO_OPERARIO_CHECK CHECK (salario >= 1212.00)
+);
+
+-- tabela pra arquitetos
+CREATE TABLE TB_ARQUITETOS OF TP_ARQUITETO (
+    cpf CONSTRAINT ARQUITETO_CPF_PK PRIMARY KEY,
+    cau CONSTRAINT ARQUITETO_CAU_NN NOT NULL UNIQUE,
+    salario CONSTRAINT ARQUITETO_SALARIO_NN NOT NULL,
+    CONSTRAINT SALARIO_ARQUITETO_CHECK CHECK (salario >= 3000.00)
+);
+
+-- tabela pra engenheiros
+CREATE TABLE TB_ENGENHEIROS OF TP_ENGENHEIRO (
+    cpf CONSTRAINT ENGENHEIRO_CPF_PK PRIMARY KEY,
+    crea CONSTRAINT ENGENHEIRO_CREA_NN NOT NULL UNIQUE,
+    cargo CONSTRAINT ENGENHEIRO_CARGO_NN NOT NULL,
+    salario CONSTRAINT ENGENHEIRO_SALARIO_NN NOT NULL,
+    CONSTRAINT FK_ENGENHEIRO_SUPERVISOR FOREIGN KEY (ref_supervisor) REFERENCES TB_ENGENHEIROS,
+    CONSTRAINT SALARIO_ENGENHEIRO_CHECK CHECK (salario >= 5000.00)
+);
+
+-- tabela pra materiais
+CREATE TABLE TB_MATERIAIS OF TP_MATERIAL (
+    codigo CONSTRAINT MATERIAL_CODIGO_NN NOT NULL,
+    nome CONSTRAINT MATERIAL_NOME_NN NOT NULL,
+    quantidade CONSTRAINT MATERIAL_QUANTIDADE_NN NOT NULL,
+    custo_unitario CONSTRAINT MATERIAL_CUSTO_UNITARIO_NN NOT NULL,
+    CONSTRAINT PK_MATERIAL PRIMARY KEY (codigo),
+    CONSTRAINT QUANTIDADE_CHECK CHECK (quantidade >= 0),
+    CONSTRAINT CUSTO_CHECK CHECK (custo_unitario > 0)
+);
+
+-- tabela pra projetos
+CREATE TABLE TB_PROJETOS OF TP_PROJETO (
+    id_projeto CONSTRAINT PROJETO_ID_NN NOT NULL,
+    ref_endereco WITH ROWID REFERENCES TB_ENDERECOS,
+    orcamento CONSTRAINT PROJETO_ORCAMENTO_NN NOT NULL,
+    CONSTRAINT PK_PROJETO PRIMARY KEY (id_projeto),
+    CONSTRAINT ORCAMENTO_CHECK CHECK (orcamento > 0)
+) NESTED TABLE etapas STORE AS NT_TB_ETAPAS_PROJETO (
+    CONSTRAINT STATUS_CHECK CHECK (status_atual IN ('planejada', 'em execução', 'concluída', 'cancelada')),
+    CONSTRAINT DATAS_CHECK CHECK (data_conclusao_prevista >= data_inicio)
+);
+
+-- tabela pra contratos
+CREATE TABLE TB_CONTRATAS OF TP_CONTRATA (
+    ref_cliente WITH ROWID REFERENCES TB_CLIENTES,
+    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
+    data_assinatura CONSTRAINT CONTRATA_DATA_ASS_NN NOT NULL,
+    valor_total CONSTRAINT CONTRATA_VALOR_TOTAL_NN NOT NULL,
+    condicoes_pagamento CONSTRAINT CONTRATA_COND_PAG_NN NOT NULL,
+    CONSTRAINT PK_CONTRATA PRIMARY KEY (ref_cliente, ref_projeto),
+    CONSTRAINT VALOR_TOTAL_CHECK CHECK (valor_total > 0)
+);
+
+-- tabela pra trabalha_em
+CREATE TABLE TB_TRABALHA_EM OF TP_TRABALHA_EM (
+    ref_operario WITH ROWID REFERENCES TB_OPERARIOS,
+    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
+    CONSTRAINT PK_TRABALHA_EM PRIMARY KEY (ref_operario, ref_projeto)
+);
+
+-- tabela pra planeja
+CREATE TABLE TB_PLANEJA OF TP_PLANEJA (
+    ref_engenheiro WITH ROWID REFERENCES TB_ENGENHEIROS,
+    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
+    status_calculo_estrutural CONSTRAINT PLANEJA_STATUS_CALC_NN NOT NULL,
+    status_fundacao CONSTRAINT PLANEJA_STATUS_FUND_NN NOT NULL,
+    CONSTRAINT PK_PLANEJA PRIMARY KEY (ref_engenheiro, ref_projeto),
+    CONSTRAINT STATUS_CALC_CHECK CHECK (status_calculo_estrutural IN ('pendente', 'em andamento', 'concluído')),
+    CONSTRAINT STATUS_FUND_CHECK CHECK (status_fundacao IN ('pendente', 'em andamento', 'concluído'))
+);
+
+-- tabela pra projeta
+CREATE TABLE TB_PROJETA OF TP_PROJETA (
+    ref_arquiteto WITH ROWID REFERENCES TB_ARQUITETOS,
+    ref_projeto WITH ROWID REFERENCES TB_PROJETOS,
+    CONSTRAINT PK_PROJETA PRIMARY KEY (ref_arquiteto, ref_projeto)
+);
+
+-- tabela pra aloca_para
 CREATE TABLE TB_ALOCA_PARA OF TP_ALOCA_PARA (
     ref_fornecedor WITH ROWID REFERENCES TB_FORNECEDORES,
     ref_material WITH ROWID REFERENCES TB_MATERIAIS,
@@ -670,13 +675,13 @@ CREATE TABLE TB_ALOCA_PARA OF TP_ALOCA_PARA (
     CONSTRAINT PK_ALOCA_PARA PRIMARY KEY (ref_fornecedor, ref_material, ref_projeto)
 );
 
--- 27. Sequência para ID do Projeto
+-- sequência pra id do projeto
 CREATE SEQUENCE SEQ_PROJETO_ID
     START WITH 1
     INCREMENT BY 1
     NOCACHE;
 
--- Trigger para Gerar Automaticamente o id_projeto
+-- trigger pra gerar automaticamente o id_projeto
 CREATE OR REPLACE TRIGGER TRG_PROJETO_ID
 BEFORE INSERT ON TB_PROJETOS
 FOR EACH ROW
