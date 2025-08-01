@@ -1,10 +1,3 @@
-/* 
-Arquivo: AV5/povoamento.sql
-Atualizado para dados de inserção conforme AV3/povoamento.sql, adaptado para AV5 tipos e tabelas
-*/
-
--- Inserindo dados de exemplo para AV5
-
 -- Inserindo Endereços
 INSERT INTO TB_ENDERECOS VALUES ('50000000', '100', 'Ap. 101', 'Rua Boa Vista', 'Centro', 'Recife', 'PE');
 INSERT INTO TB_ENDERECOS VALUES ('50000000', '200', 'Casa', 'Rua Boa Vista', 'Centro', 'Recife', 'PE');
@@ -16,7 +9,6 @@ INSERT INTO TB_ENDERECOS VALUES ('60000000', '80', 'Andar 2', 'Av. Beira Mar', '
 INSERT INTO TB_ENDERECOS VALUES ('70000000', '123', 'Lote 5', 'Rua das Palmeiras', 'Asa Sul', 'Brasília', 'DF');
 
 -- Inserindo Pessoas (TP_PESSOA e subtipos)
--- Como AV5 uses object tables, insertions must use constructors
 
 -- Exemplo para Engenheiro Supervisor
 INSERT INTO TB_ENGENHEIROS VALUES (
@@ -170,10 +162,3 @@ SELECT VALUE(p) FROM TB_PROJETOS p WHERE p.id_projeto = 'PROJ001';
 
 -- Testando ALTER TYPE para adicionar um novo atributo
 ALTER TYPE TP_OPERARIO ADD ATTRIBUTE data_admissao DATE CASCADE;
-
--- Teste: DESC TP_OPERARIO; deve mostrar a nova coluna data_admissao.
-
--- Conceitos de FINAL e MAP MEMBER FUNCTION
--- (Explicados conceitualmente pois alteram a estrutura já criada)
--- Se um método fosse FINAL, não poderíamos sobrescrevê-lo (OVERRIDING).
--- Um método MAP é usado para ordenação, ex: ORDER BY p.metodo_map().
