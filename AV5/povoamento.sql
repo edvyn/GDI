@@ -88,8 +88,8 @@ INSERT INTO TB_PROJETOS VALUES (
         (SELECT REF(e) FROM TB_ENDERECOS e WHERE e.cep = '50000000' AND e.numero = '100' AND e.complemento = 'Ap. 101'),
         500000.00,
         TP_ETAPA_LIST(
-            TP_ETAPA('planejada', DATE '2024-06-01', DATE '2024-07-30'),
-            TP_ETAPA('em execução', DATE '2024-08-01', DATE '2024-12-31')
+            TP_ETAPA('planejada', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-07-30', 'YYYY-MM-DD')),
+            TP_ETAPA('em execução', TO_DATE('2024-08-01', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'))
         )
     )
 );
